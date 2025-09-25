@@ -2,28 +2,7 @@
 
 This project implements a Für Elise player using the STM32L432KC microcontroller with PWM-based square wave generation.
 
-## Project Structure
 
-```
-Lab4/
-├── lab4_starter.c           # Für Elise note data (frequencies and durations)
-├── fur_elise_player.c       # Complete player implementation (includes main)
-├── lib/                     # Tutorial library files
-│   ├── STM32L432KC_RCC.c   # Clock configuration (working solution)
-│   ├── STM32L432KC_RCC.h   # RCC header
-│   ├── STM32L432KC_GPIO.c  # GPIO functions
-│   ├── STM32L432KC_GPIO.h  # GPIO header
-│   ├── STM32L432KC_FLASH.c # Flash configuration
-│   └── STM32L432KC_FLASH.h # Flash header
-├── STM32L4xx/              # STM32 device headers
-│   └── Device/
-│       ├── Include/
-│       │   ├── stm32l432xx.h
-│       │   └── system_stm32l4xx.h
-│       └── Source/
-│           └── system_stm32l4xx.c
-└── README.md               # This file
-```
 
 ## Features
 
