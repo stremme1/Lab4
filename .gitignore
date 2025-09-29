@@ -1,0 +1,27 @@
+# SEGGER Embedded Studio files
+Output/
+*.emProject
+*.jlink
+*.elf
+*.map
+*.o
+*.d
+*.ind
+
+# Build artifacts
+*.bin
+*.hex
+*.lst
+
+# IDE files
+*.workspace
+*.project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
