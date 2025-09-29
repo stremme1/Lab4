@@ -1,27 +1,44 @@
-# SEGGER Embedded Studio files
-Output/
+# SEGGER Embedded Studio project files
 *.emProject
 *.jlink
-*.elf
-*.map
+*.jlinkSettings
+
+# Build output directories
+Output/
+Debug/
+Release/
+
+# Object files and build artifacts
 *.o
 *.d
-*.ind
-
-# Build artifacts
+*.elf
+*.map
 *.bin
 *.hex
 *.lst
 
-# IDE files
-*.workspace
-*.project
+# SEGGER specific files
+*.ind
+*.deps
 
-# OS files
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Temporary files
-*.tmp
-*.temp
-*~
+# Keep source files (.c, .h, .s, .md)
+!*.c
+!*.h
+!*.s
+!*.md

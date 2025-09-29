@@ -1,9 +1,14 @@
 // lab4_starter.c
-// Fur Elise, E155 Lab 4
-// Updated Fall 2024
+// Fur Elise and Minecraft Sweden, E155 Lab 4
+//
+// Author: Emmett Stralka
+// Email: estralka@hmc.edu
+// Date: 9/29/25
+//
+// Description: Musical note data for Für Elise and Minecraft songs
 
 // Pitch in Hz, duration in ms
-const int notes[][2] = {
+const int fur_elise_notes[][2] = {
 {659,	125},
 {623,	125},
 {659,	125},
@@ -113,3 +118,36 @@ const int notes[][2] = {
 {494,	125},
 {440,	500},
 {  0,	0}};
+
+// Minecraft "Sweden" by C418
+// Pitch in Hz, duration in ms (will be multiplied by 10x for proper tempo)
+// Target: Much slower, more accurate to original - very calm and peaceful
+const int minecraft_notes[][2] = {
+    // Main melody - very slow and peaceful (much longer base durations for 10x multiplier)
+    {349, 200}, {392, 200}, {330, 200}, {294, 200}, {330, 200}, {392, 200}, {523, 400},
+    {0, 100},
+    {349, 200}, {392, 200}, {330, 200}, {294, 200}, {330, 100}, {294, 100}, {262, 400},
+    {0, 200},
+    {349, 200}, {392, 200}, {330, 200}, {294, 200}, {330, 200}, {392, 200}, {523, 400},
+    {0, 100},
+    {587, 200}, {523, 200}, {494, 200}, {440, 200}, {494, 200}, {523, 400},
+    {0, 200},
+    
+    // Second part
+    {349, 200}, {392, 200}, {330, 200}, {294, 200}, {330, 200}, {392, 200}, {523, 400},
+    {0, 100},
+    {349, 200}, {392, 200}, {330, 200}, {294, 200}, {330, 100}, {294, 100}, {262, 400},
+    {0, 200},
+    
+    // Variation
+    {392, 200}, {440, 200}, {349, 200}, {330, 200}, {349, 200}, {440, 200}, {587, 400},
+    {0, 100},
+    {392, 200}, {440, 200}, {349, 200}, {330, 200}, {349, 100}, {330, 100}, {294, 400},
+    {0, 200},
+    
+    // Ending phrase
+    {349, 200}, {392, 200}, {330, 200}, {294, 200}, {330, 200}, {392, 200}, {523, 400},
+    {0, 100},
+    {587, 200}, {523, 200}, {494, 200}, {440, 200}, {494, 400}, {440, 400},
+    {0, 0}
+};

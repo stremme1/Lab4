@@ -1,14 +1,25 @@
-// fur_elise_player_hardware_volume.c
-// Complete Für Elise Player for STM32L432KC with Hardware Volume Control
-// Based on tutorial clock configuration solution
-// Potentiometer controls volume directly in hardware (no ADC needed)
+// fur_elise_player.c
+// Music Player for STM32L432KC with Hardware Volume Control
+//
+// Author: Emmett Stralka
+// Email: estralka@hmc.edu
+// Date: 9/29/25
+//
+// Description: PWM-based music player with hardware volume control and 100 BPM timing
 
 #include "STM32L432KC_RCC.h"
 #include "STM32L432KC_GPIO.h"
 #include "STM32L432KC_FLASH.h"
 
-// External reference to the note data from lab4_starter.c
-extern const int notes[][2];
+// ========== SONG SELECTION ==========
+// Comment out one line and uncomment the other to switch songs
+#define PLAY_FUR_ELISE
+//#define PLAY_MINECRAFT
+// ====================================
+
+// External references to song data from lab4_starter.c
+extern const int fur_elise_notes[][2];
+extern const int minecraft_notes[][2];
 
 // Function prototypes
 void TIM2_Init(void);
@@ -16,38 +27,68 @@ void play_note(int frequency, int duration_ms);
 void ms_delay(int ms);
 
 // Define audio output pin
-#define AUDIO_PIN 5  // PA5 for TIM2_CH1
+#define AUDIO_PIN 0  // PA0 for TIM2_CH1
 
 // Main function - plays Für Elise with hardware volume control
 int main(void) {
-    // Configure flash to add waitstates to avoid timing errors
     configureFlash();
-
-    // Setup the PLL and switch clock source to the PLL
     configureClock();
-
-    // Turn on clock to GPIOA
-    RCC->AHB2ENR |= (1 << 0);
-
-    // Set AUDIO_PIN as alternate function
-    pinMode(AUDIO_PIN, GPIO_ALT);
     
-    // Initialize timer for PWM generation
+    // Enable GPIOA clock
+    RCC->AHB2ENR |= (1 << 0);
+    
+    // Configure PA0 as alternate function for TIM2_CH1
+    volatile uint32_t *gpioa_moder = (volatile uint32_t *)0x48000000;
+    *gpioa_moder &= ~(0b11 << 0);
+    *gpioa_moder |= (0b10 << 0);
+    
+    // Set alternate function to AF1 (TIM2_CH1)
+    volatile uint32_t *gpioa_afrl = (volatile uint32_t *)0x48000020;
+    *gpioa_afrl &= ~(0b1111 << 0);
+    *gpioa_afrl |= (0b0001 << 0);
+    
     TIM2_Init();
     
-    // Play Für Elise
-    // Volume is controlled by potentiometer in hardware
-    int i = 0;
-    while (notes[i][1] != 0) { // Loop until duration is 0 (end marker)
-        if (notes[i][0] == 0) {
-            // Rest - just delay
-            ms_delay(notes[i][1]);
-        } else {
-            // Play note (volume controlled by hardware potentiometer)
-            play_note(notes[i][0], notes[i][1]);
+    // Test with A4 (440Hz)
+    play_note(440, 2000);
+    ms_delay(500);
+    
+    // Play selected song
+    #ifdef PLAY_FUR_ELISE
+        // Play Für Elise with proper tempo
+        // Clock analysis: 80MHz system clock affects ms_delay timing
+        // ms_delay uses NOP loop - timing depends on clock speed
+        // At 80MHz, NOP loop is much faster than expected 1ms
+        // Need larger multiplier to compensate for fast clock
+        // Testing: 16x multiplier for 100 BPM at 80MHz
+        // 125ms quarter note → 500ms at 100 BPM
+        // Multiplier = 500ms ÷ 125ms = 4x
+        // But 80MHz clock makes ms_delay() 4x faster
+        // Total multiplier = 4x × 4x = 16x
+        int i = 0;
+        while (fur_elise_notes[i][1] != 0) {
+            if (fur_elise_notes[i][0] == 0) {
+                ms_delay(fur_elise_notes[i][1] * 16.0f);
+            } else {
+                play_note(fur_elise_notes[i][0], (int)(fur_elise_notes[i][1] * 16.0f));
+            }
+            i++;
         }
-        i++;
-    }
+    #endif
+    
+    #ifdef PLAY_MINECRAFT
+        // Play Minecraft "Sweden" with proper tempo
+        // Apply same 16x multiplier as Für Elise
+        int i = 0;
+        while (minecraft_notes[i][1] != 0) {
+            if (minecraft_notes[i][0] == 0) {
+                ms_delay(minecraft_notes[i][1] * 16.0f);
+            } else {
+                play_note(minecraft_notes[i][0], (int)(minecraft_notes[i][1] * 16.0f));
+            }
+            i++;
+        }
+    #endif
     
     // End of song - infinite loop
     while(1) {
@@ -99,56 +140,35 @@ typedef struct {
 
 // Initialize TIM2 for PWM generation
 void TIM2_Init(void) {
-    // Enable TIM2 clock
     RCC->APB1ENR1 |= (1 << 0);
     
-    // Configure TIM2 for PWM mode
-    // Prescaler: 80MHz / 80 = 1MHz timer frequency
-    TIM2->PSC = 79; // 80MHz / (79+1) = 1MHz
+    // Configure for 1MHz timer frequency (80MHz / 80)
+    TIM2->PSC = 79;
+    TIM2->ARR = 1000;
     
-    // Auto-reload value (will be set per note)
-    TIM2->ARR = 1000; // Default 1kHz
-    
-    // Configure channel 1 for PWM mode 1
-    TIM2->CCMR1 |= (0b110 << 4); // PWM mode 1
-    TIM2->CCMR1 |= (1 << 3);     // Enable preload
-    
-    // Set duty cycle to 50% (square wave)
-    TIM2->CCR1 = 500; // 50% duty cycle
-    
-    // Enable channel 1 output
+    // Configure PWM mode 1 with 50% duty cycle
+    TIM2->CCMR1 |= (0b110 << 4) | (1 << 3);
+    TIM2->CCR1 = 500;
     TIM2->CCER |= (1 << 0);
-    
-    // Enable auto-reload preload
-    TIM2->CR1 |= (1 << 7);
-    
-    // Start timer
-    TIM2->CR1 |= (1 << 0);
+    TIM2->CR1 |= (1 << 7) | (1 << 0);
 }
 
 // Play a note with specified frequency and duration
-// Volume is controlled by hardware potentiometer
 void play_note(int frequency, int duration_ms) {
     if (frequency == 0) {
-        // Rest - stop timer
         TIM2->CR1 &= ~(1 << 0);
         ms_delay(duration_ms);
         return;
     }
     
-    // Calculate timer period for desired frequency
-    // Timer frequency = 1MHz, so period = 1,000,000 / frequency
     uint32_t period = 1000000 / frequency;
-    
-    // Update timer period
     TIM2->ARR = period;
-    TIM2->CCR1 = period / 2; // 50% duty cycle for square wave
+    TIM2->CCR1 = period / 2;
     
-    // Restart timer if stopped
     if (!(TIM2->CR1 & (1 << 0))) {
         TIM2->CR1 |= (1 << 0);
     }
     
-    // Play for specified duration
     ms_delay(duration_ms);
 }
+
