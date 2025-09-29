@@ -3,9 +3,9 @@
 // Based on tutorial clock configuration solution
 // Potentiometer controls volume directly in hardware (no ADC needed)
 
-#include "lib/STM32L432KC_RCC.h"
-#include "lib/STM32L432KC_GPIO.h"
-#include "lib/STM32L432KC_FLASH.h"
+#include "STM32L432KC_RCC.h"
+#include "STM32L432KC_GPIO.h"
+#include "STM32L432KC_FLASH.h"
 
 // External reference to the note data from lab4_starter.c
 extern const int notes[][2];
