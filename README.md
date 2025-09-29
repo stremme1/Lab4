@@ -1,8 +1,6 @@
 # Lab4 - Für Elise Player for STM32L432KC
 
-This project implements a Für Elise player using the STM32L432KC microcontroller with PWM-based square wave generation.
-
-
+This project implements a Für Elise player using the STM32L432KC microcontroller with PWM-based square wave generation and hardware volume control.
 
 ## Features
 
@@ -11,12 +9,14 @@ This project implements a Für Elise player using the STM32L432KC microcontrolle
 - **Musical Notes**: Plays complete Für Elise melody
 - **Accurate Timing**: 1MHz timer resolution for precise frequencies
 - **Rest Support**: Handles silence between notes
+- **Hardware Volume Control**: Potentiometer controls volume directly in analog circuit
 
 ## Hardware Setup
 
 - **MCU**: STM32L432KC
 - **Audio Output**: PA5 (TIM2_CH1)
-- **Speaker**: Connect to PA5 and ground through simple amplifier
+- **Speaker**: Connect positive to PA5, negative to potentiometer
+- **Volume Control**: Potentiometer in series with speaker
 
 ## Clock Configuration
 
@@ -37,7 +37,17 @@ This project implements a Für Elise player using the STM32L432KC microcontrolle
 2. **Include Libraries**: Add the `lib/` folder to your include path
 3. **Build**: Compile using SEGGER's build system
 4. **Flash**: Use SEGGER's built-in J-Link integration to flash
-5. **Listen**: Connect speaker to PA5 and ground
+5. **Hardware Setup**: Wire speaker and potentiometer as shown below
+
+## Wiring Diagram
+
+```
+STM32L432KC:
+PA5 ────────── Speaker (+) 
+                Speaker (-) ──── Pot Pin 1
+                                Pot Pin 2 (Wiper) ──── GND
+                                Pot Pin 3 ──────────── GND
+```
 
 ## Code Integration
 
@@ -61,6 +71,13 @@ The `lab4_starter.c` file contains the complete Für Elise melody with:
 - `ms_delay(ms)`: Precise delay function
 - `configureClock()`: Setup 80MHz PLL
 - `configureFlash()`: Configure flash for high-speed operation
+
+## Volume Control
+
+- **Hardware Control**: Potentiometer acts as variable resistor
+- **Real-time**: Adjust volume while music plays
+- **Simple**: No software processing needed
+- **Responsive**: Instant volume changes
 
 ## Ready for SEGGER!
 

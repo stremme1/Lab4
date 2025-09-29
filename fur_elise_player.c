@@ -1,7 +1,7 @@
-// fur_elise_player.c
-// Complete Für Elise Player for STM32L432KC
+// fur_elise_player_hardware_volume.c
+// Complete Für Elise Player for STM32L432KC with Hardware Volume Control
 // Based on tutorial clock configuration solution
-// Just include this file and lab4_starter.c in your SEGGER project
+// Potentiometer controls volume directly in hardware (no ADC needed)
 
 #include "lib/STM32L432KC_RCC.h"
 #include "lib/STM32L432KC_GPIO.h"
@@ -18,7 +18,7 @@ void ms_delay(int ms);
 // Define audio output pin
 #define AUDIO_PIN 5  // PA5 for TIM2_CH1
 
-// Main function - plays Für Elise automatically
+// Main function - plays Für Elise with hardware volume control
 int main(void) {
     // Configure flash to add waitstates to avoid timing errors
     configureFlash();
@@ -36,13 +36,14 @@ int main(void) {
     TIM2_Init();
     
     // Play Für Elise
+    // Volume is controlled by potentiometer in hardware
     int i = 0;
     while (notes[i][1] != 0) { // Loop until duration is 0 (end marker)
         if (notes[i][0] == 0) {
             // Rest - just delay
             ms_delay(notes[i][1]);
         } else {
-            // Play note
+            // Play note (volume controlled by hardware potentiometer)
             play_note(notes[i][0], notes[i][1]);
         }
         i++;
@@ -126,6 +127,7 @@ void TIM2_Init(void) {
 }
 
 // Play a note with specified frequency and duration
+// Volume is controlled by hardware potentiometer
 void play_note(int frequency, int duration_ms) {
     if (frequency == 0) {
         // Rest - stop timer
