@@ -1,3 +1,16 @@
 # Lab4 - Für Elise Player for STM32L432KC
 
-This project implements a Für Elise player using the STM32L432KC microcontroller with PWM-based square wave generation and hardware volume control. The system uses an 80MHz system clock with 1MHz timer frequency (80MHz ÷ 80 prescaler) for precise audio generation. **BPM Calculation**: For 100 BPM, quarter notes require 600ms duration. With 125ms as the base quarter note in the data and 80MHz clock making ms_delay() 4x faster, the required multiplier is 4x (tempo) × 4x (clock compensation) = 16x. **Specifications**: Minimum duration supported is 125ms (base unit), maximum duration is 500ms (4x base), minimum frequency is 262Hz (lowest Für Elise note), maximum frequency is 1319Hz (highest Für Elise note). The timer configuration uses 1MHz frequency with period calculation: 1,000,000 ÷ frequency, providing 1μs resolution for accurate musical timing. Hardware volume control via potentiometer eliminates need for ADC processing.
+This project implements a Für Elise player using the STM32L432KC microcontroller with PWM-based square wave generation and hardware volume control.
+
+## BPM Calculation
+- **125ms = quarter note** → **500ms at 100 BPM**
+- **80MHz clock compensation**: 80ms ÷ 500ms × 10 = **16x multiplier**
+
+## Specifications
+- **Min duration**: 125ms (base unit)
+- **Max duration**: 500ms (4x base)  
+- **Min frequency**: 262Hz
+- **Max frequency**: 1319Hz
+- **Timer resolution**: 1μs (1MHz timer frequency)
+
+The system uses 80MHz system clock with 1MHz timer frequency for precise audio generation. Hardware volume control via potentiometer eliminates need for ADC processing.
