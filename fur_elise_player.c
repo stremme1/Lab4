@@ -52,10 +52,9 @@ int main(void) {
     // Play selected song
     #ifdef PLAY_FUR_ELISE
         // Play Für Elise with proper timing
-        // Fine-tune timing with 2x multiplier
         int i = 0;
         while (fur_elise_notes[i][1] != 0) {
-            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1] * 2);
+            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1]);
             i++;
         }
     #endif
@@ -80,7 +79,7 @@ int main(void) {
 // Calibrated for 80MHz system clock
 void ms_delay(int ms) {
    while (ms-- > 0) {
-      volatile int x=8000;  // 8,000 NOPs for 1ms at 80MHz
+      volatile int x=8000; //1ms at 80MHz
       while (x-- > 0)
          __asm("nop");
    }
