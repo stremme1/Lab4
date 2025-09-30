@@ -7,13 +7,13 @@ This project implements a Für Elise player using the STM32L432KC microcontrolle
 - Original durations used: 125ms, 250ms, 375ms, 500ms
 - No complex frequency calculations needed
 
-## Specifications
-- Min duration: 125ms (shortest note in Für Elise)
-- Max duration: 500ms (longest note in Für Elise)  
-- Min frequency: 262Hz (lowest note in Für Elise data)
-- Max frequency: 1319Hz (highest note in Für Elise data)
-- Timer output: Fixed 1kHz square wave (frequency parameter ignored)
-- Duration range: 125ms to 500ms (4x range)
-- Frequency range: 262Hz to 1319Hz (5x range)
+## Technical Constraints (Player Implementation)
+- **Min duration**: 1ms (limited by ms_delay() precision at 80MHz)
+- **Max duration**: 65,535ms (limited by 16-bit integer in ms_delay())
+- **Min frequency**: 1Hz (theoretical minimum for timer)
+- **Max frequency**: 1MHz (timer frequency limit: 80MHz ÷ 80 = 1MHz)
+- **Actual output**: Fixed 1kHz square wave (frequency parameter ignored)
+- **Timer resolution**: 1μs (1MHz timer frequency)
+- **Duty cycle**: 50% (fixed CCR1 = ARR/2)
 
 The system uses 80MHz system clock with 1MHz timer frequency for precise audio generation. Hardware volume control via potentiometer eliminates need for ADC processing.
