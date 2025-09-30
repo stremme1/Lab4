@@ -85,13 +85,13 @@ void ms_delay(int ms) {
    }
 }
 
-// Timer definitions (tutorial style)
+// Timer definitions 
 #define __IO volatile
 
 // Base addresses
 #define TIM2_BASE (0x40000000UL)
 
-// Timer register structure (tutorial style)
+// Timer register structure 
 typedef struct {
     __IO uint32_t CR1;      // Control register 1
     __IO uint32_t CR2;      // Control register 2
