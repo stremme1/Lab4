@@ -55,37 +55,19 @@ int main(void) {
     
     // Play selected song
     #ifdef PLAY_FUR_ELISE
-        // Play Für Elise with proper tempo
-        // Clock analysis: 80MHz system clock affects ms_delay timing
-        // ms_delay uses NOP loop - timing depends on clock speed
-        // At 80MHz, NOP loop is much faster than expected 1ms
-        // Need larger multiplier to compensate for fast clock
-        // Testing: 16x multiplier for 100 BPM at 80MHz
-        // 125ms quarter note → 500ms at 100 BPM
-        // Multiplier = 500ms ÷ 125ms = 4x
-        // But 80MHz clock makes ms_delay() 4x faster
-        // Total multiplier = 4x × 4x = 16x
+        // Play Für Elise with original timing
         int i = 0;
         while (fur_elise_notes[i][1] != 0) {
-            if (fur_elise_notes[i][0] == 0) {
-                ms_delay(fur_elise_notes[i][1] * 16.0f);
-            } else {
-                play_note(fur_elise_notes[i][0], (int)(fur_elise_notes[i][1] * 16.0f));
-            }
+            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1]);
             i++;
         }
     #endif
     
     #ifdef PLAY_MINECRAFT
-        // Play Minecraft "Sweden" with proper tempo
-        // Apply same 16x multiplier as Für Elise
+        // Play Minecraft "Sweden" with original timing
         int i = 0;
         while (minecraft_notes[i][1] != 0) {
-            if (minecraft_notes[i][0] == 0) {
-                ms_delay(minecraft_notes[i][1] * 16.0f);
-            } else {
-                play_note(minecraft_notes[i][0], (int)(minecraft_notes[i][1] * 16.0f));
-            }
+            play_note(minecraft_notes[i][0], minecraft_notes[i][1]);
             i++;
         }
     #endif
@@ -142,13 +124,13 @@ typedef struct {
 void TIM2_Init(void) {
     RCC->APB1ENR1 |= (1 << 0);
     
-    // Configure for 1MHz timer frequency (80MHz / 80)
-    TIM2->PSC = 79;
-    TIM2->ARR = 1000;
+    // Simple setup: 1MHz timer, fixed 1kHz output
+    TIM2->PSC = 79;  // 80MHz / 80 = 1MHz
+    TIM2->ARR = 1000;  // 1kHz square wave
+    TIM2->CCR1 = 500;  // 50% duty cycle
     
-    // Configure PWM mode 1 with 50% duty cycle
+    // Enable PWM output
     TIM2->CCMR1 |= (0b110 << 4) | (1 << 3);
-    TIM2->CCR1 = 500;
     TIM2->CCER |= (1 << 0);
     TIM2->CR1 |= (1 << 7) | (1 << 0);
 }
@@ -156,16 +138,10 @@ void TIM2_Init(void) {
 // Play a note with specified frequency and duration
 void play_note(int frequency, int duration_ms) {
     if (frequency == 0) {
+        // Rest - turn off timer
         TIM2->CR1 &= ~(1 << 0);
-        ms_delay(duration_ms);
-        return;
-    }
-    
-    uint32_t period = 1000000 / frequency;
-    TIM2->ARR = period;
-    TIM2->CCR1 = period / 2;
-    
-    if (!(TIM2->CR1 & (1 << 0))) {
+    } else {
+        // Note - turn on timer (fixed 1kHz square wave)
         TIM2->CR1 |= (1 << 0);
     }
     

@@ -3,14 +3,15 @@
 This project implements a Für Elise player using the STM32L432KC microcontroller with PWM-based square wave generation and hardware volume control.
 
 ## BPM Calculation
-- 125ms = quarter note → 500ms at 100 BPM
-- 80MHz clock compensation: 80ms ÷ 500ms × 10 = 16x multiplier
+- Simplified approach: Fixed 1kHz square wave output
+- Original durations used: 125ms, 250ms, 375ms, 500ms
+- No complex frequency calculations needed
 
 ## Specifications
-- Min duration: 125ms (base unit)
-- Max duration: 500ms (4x base)  
-- Min frequency: 262Hz
-- Max frequency: 1319Hz
-- Timer resolution: 1μs (1MHz timer frequency)
+- Min duration: 125ms (shortest note)
+- Max duration: 500ms (longest note)  
+- Min frequency: 262Hz (lowest note in data)
+- Max frequency: 1319Hz (highest note in data)
+- Timer output: Fixed 1kHz square wave (frequency ignored)
 
 The system uses 80MHz system clock with 1MHz timer frequency for precise audio generation. Hardware volume control via potentiometer eliminates need for ADC processing.
