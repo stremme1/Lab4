@@ -49,25 +49,23 @@ int main(void) {
     
     TIM2_Init();
     
-    // Test with A4 (440Hz)
-    play_note(440, 2000);
-    ms_delay(500);
-    
     // Play selected song
     #ifdef PLAY_FUR_ELISE
-        // Play Für Elise with original timing
+        // Play Für Elise with proper timing
+        // Fine-tune timing with 2x multiplier
         int i = 0;
         while (fur_elise_notes[i][1] != 0) {
-            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1]);
+            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1] * 2);
             i++;
         }
     #endif
     
     #ifdef PLAY_MINECRAFT
-        // Play Minecraft "Sweden" with original timing
+        // Play Minecraft "Sweden" with proper timing
+        // Fine-tune timing with 2x multiplier
         int i = 0;
         while (minecraft_notes[i][1] != 0) {
-            play_note(minecraft_notes[i][0], minecraft_notes[i][1]);
+            play_note(minecraft_notes[i][0], minecraft_notes[i][1] * 2);
             i++;
         }
     #endif
@@ -79,10 +77,10 @@ int main(void) {
     return 0;
 }
 
-// Function for dummy delay by executing nops
+// Calibrated for 80MHz system clock
 void ms_delay(int ms) {
    while (ms-- > 0) {
-      volatile int x=1000;
+      volatile int x=8000;  // 8,000 NOPs for 1ms at 80MHz
       while (x-- > 0)
          __asm("nop");
    }
@@ -124,27 +122,44 @@ typedef struct {
 void TIM2_Init(void) {
     RCC->APB1ENR1 |= (1 << 0);
     
-    // Simple setup: 1MHz timer, fixed 1kHz output
+    // Configure for 1MHz timer frequency (80MHz / 80)
     TIM2->PSC = 79;  // 80MHz / 80 = 1MHz
-    TIM2->ARR = 1000;  // 1kHz square wave
+    
+    // Set default values
+    TIM2->ARR = 1000;  // Default 1kHz
     TIM2->CCR1 = 500;  // 50% duty cycle
     
-    // Enable PWM output
-    TIM2->CCMR1 |= (0b110 << 4) | (1 << 3);
-    TIM2->CCER |= (1 << 0);
-    TIM2->CR1 |= (1 << 7) | (1 << 0);
+    // Configure PWM mode 1
+    TIM2->CCMR1 |= (0b110 << 4) | (1 << 3);  // PWM mode 1, preload enable
+    TIM2->CCER |= (1 << 0);  // Enable channel 1
+    TIM2->CR1 |= (1 << 7);   // Auto-reload preload enable
+    
+    // Start timer
+    TIM2->CR1 |= (1 << 0);
 }
 
 // Play a note with specified frequency and duration
 void play_note(int frequency, int duration_ms) {
     if (frequency == 0) {
-        // Rest - turn off timer
+        // Rest - stop timer for silence
         TIM2->CR1 &= ~(1 << 0);
-    } else {
-        // Note - turn on timer (fixed 1kHz square wave)
+        ms_delay(duration_ms);
+        return;
+    }
+    
+    // Timer frequency = 1MHz, so period = 1,000,000 / frequency
+    uint32_t period = 1000000 / frequency;
+    
+    // Update timer period and duty cycle
+    TIM2->ARR = period;
+    TIM2->CCR1 = period / 2;  // 50% duty cycle
+    
+    // Start timer if not already running
+    if (!(TIM2->CR1 & (1 << 0))) {
         TIM2->CR1 |= (1 << 0);
     }
     
+    // Play for specified duration
     ms_delay(duration_ms);
 }
 
