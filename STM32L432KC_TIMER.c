@@ -41,9 +41,12 @@ void TIM2_Stop(void) {
 // Set frequency for PWM output
 void TIM2_SetFrequency(uint32_t frequency) {
     if (frequency == 0) {
-        TIM2_Stop();
+        TIM2_Silence();
         return;
     }
+    
+    // Re-enable the PWM output channel
+    TIM2->CCER |= (1 << 0);  // Enable channel 1 output
     
     // Calculate timer period for desired frequency
     // Timer frequency = 1MHz, so period = 1,000,000 / frequency
@@ -65,4 +68,41 @@ void ms_delay(int ms) {
       while (x-- > 0)
          __asm("nop");
    }
+}
+
+// Enable GPIOA clock for TIM2_CH1 (PA0)
+void TIM2_EnableGPIOClock(void) {
+    RCC->AHB2ENR |= (1 << 0);  // Enable GPIOA clock
+}
+
+// Configure PA0 as alternate function for TIM2_CH1
+void TIM2_ConfigurePA0(void) {
+    // Set PA0 to alternate function mode
+    GPIOA->MODER &= ~(0b11 << 0);  // Clear bits 0-1 (PA0)
+    GPIOA->MODER |= (0b10 << 0);   // Set bits 0-1 to 10 (alternate function)
+    
+    // Set alternate function to AF1 (TIM2_CH1)
+    GPIOA->AFRL &= ~(0b1111 << 0);  // Clear bits 0-3 (PA0)
+    GPIOA->AFRL |= (0b0001 << 0);   // Set bits 0-3 to 0001 (AF1 = TIM2_CH1)
+}
+
+
+// Disable PWM output channel for complete silence
+void TIM2_Silence(void) {
+    // Stop timer first to avoid glitches
+    TIM2_Stop();
+    // Disable the PWM output channel
+    TIM2->CCER &= ~(1 << 0);  // Disable channel 1 output
+}
+
+// Complete audio initialization function
+void TIM2_InitAudio(void) {
+    // Enable GPIOA clock
+    TIM2_EnableGPIOClock();
+    
+    // Configure PA0 as alternate function for TIM2_CH1
+    TIM2_ConfigurePA0();
+    
+    // Initialize TIM2
+    TIM2_Init();
 }

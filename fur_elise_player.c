@@ -33,20 +33,8 @@ int main(void) {
     configureFlash();
     configureClock();
     
-    // Enable GPIOA clock
-    RCC->AHB2ENR |= (1 << 0);
-    
-    // Configure PA0 as alternate function for TIM2_CH1
-    volatile uint32_t *gpioa_moder = (volatile uint32_t *)0x48000000;
-    *gpioa_moder &= ~(0b11 << 0);
-    *gpioa_moder |= (0b10 << 0);
-    
-    // Set alternate function to AF1 (TIM2_CH1)
-    volatile uint32_t *gpioa_afrl = (volatile uint32_t *)0x48000020;
-    *gpioa_afrl &= ~(0b1111 << 0);
-    *gpioa_afrl |= (0b0001 << 0);
-    
-    TIM2_Init();
+    // Complete audio setup using library function
+    TIM2_InitAudio();
     
     // Play selected song
     #ifdef PLAY_FUR_ELISE
@@ -54,7 +42,7 @@ int main(void) {
         // Fine-tune timing with 2x multiplier
         int i = 0;
         while (fur_elise_notes[i][1] != 0) {
-            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1] * 2);
+            play_note(fur_elise_notes[i][0], fur_elise_notes[i][1]);
             i++;
         }
     #endif
@@ -79,8 +67,8 @@ int main(void) {
 // Play a note with specified frequency and duration
 void play_note(int frequency, int duration_ms) {
     if (frequency == 0) {
-        // Rest - stop timer for silence
-        TIM2_Stop();
+        // Rest - set PWM duty cycle to 0% for silence
+        TIM2_Silence();
         ms_delay(duration_ms);
         return;
     }
