@@ -10,6 +10,7 @@
 #include "STM32L432KC_DAC.h"
 #include "STM32L432KC_RCC.h"
 #include "STM32L432KC_TIMER.h"  // For ms_delay
+#include <stddef.h>  // For NULL
 
 // Enable DAC clock
 void DAC_EnableClock(void) {
@@ -526,6 +527,57 @@ void DAC_PlaySineWave(float frequency, uint32_t duration_ms, uint32_t sample_rat
     }
     
     // Fade to silence at end to prevent click
+    DAC_SetValue(DAC_CHANNEL_1, 2048);
+}
+
+// Play a WAV sample from memory
+// sample_data: pointer to 16-bit signed PCM data
+// sample_length: number of samples
+// sample_rate: sample rate in Hz (should be 22050 for converted samples)
+void DAC_PlayWAV(const int16_t* sample_data, uint32_t sample_length, uint32_t sample_rate) {
+    if (sample_data == NULL || sample_length == 0) {
+        return;
+    }
+    
+    // Calculate timing - using calibrated CPU frequency
+    #define CPU_FREQ_MHZ 15  // Calibrated CPU frequency in MHz
+    uint32_t us_per_sample = 1000000UL / sample_rate;
+    uint32_t total_cycles_needed = us_per_sample * CPU_FREQ_MHZ;
+    
+    // Overhead: DAC_SetValue + loop overhead
+    // DAC_SetValue: ~30 cycles
+    // Loop overhead: ~10 cycles
+    uint32_t overhead_cycles = 50;  // Conservative estimate
+    uint32_t delay_cycles = (total_cycles_needed > overhead_cycles) ? 
+                            (total_cycles_needed - overhead_cycles) : 1;
+    
+    // Play all samples
+    for (uint32_t i = 0; i < sample_length; i++) {
+        // Convert 16-bit signed sample (-32768 to 32767) to 12-bit DAC value (0 to 4095)
+        // Center at 2048 (mid-point), scale to use full range
+        int32_t sample = (int32_t)sample_data[i];
+        
+        // Scale: map -32768..32767 to 0..4095
+        // Formula: dac_value = (sample + 32768) * 4095 / 65536
+        // Simplified: dac_value = (sample + 32768) >> 4
+        // But we want to center at 2048, so: dac_value = 2048 + (sample >> 4)
+        int32_t dac_value = 2048 + (sample >> 4);
+        
+        // Clamp to 12-bit range
+        if (dac_value < 0) dac_value = 0;
+        if (dac_value > 4095) dac_value = 4095;
+        
+        // Output to DAC
+        DAC_SetValue(DAC_CHANNEL_1, (uint16_t)dac_value);
+        
+        // Delay to maintain sample rate
+        volatile uint32_t delay_count = delay_cycles;
+        while (delay_count-- > 0) {
+            __asm("nop");
+        }
+    }
+    
+    // Fade to silence at end
     DAC_SetValue(DAC_CHANNEL_1, 2048);
 }
 

@@ -62,6 +62,7 @@ void DAC_Stop(int channel);
 void DAC_SetValue(int channel, uint16_t value);
 void DAC_InitAudio(int channel);
 void DAC_PlaySineWave(float frequency, uint32_t duration_ms, uint32_t sample_rate);
+void DAC_PlayWAV(const int16_t* sample_data, uint32_t sample_length, uint32_t sample_rate);
 void DAC_TestOutput(int channel, uint16_t value, uint32_t duration_ms);  // Test function - output constant DC value
 
 #endif

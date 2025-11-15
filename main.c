@@ -1,11 +1,11 @@
 // main.c
-// DAC-based Music Player for STM32L432KC
+// DAC-based Drum Sample Player for STM32L432KC
 //
 // Author: Emmett Stralka
 // Email: estralka@hmc.edu
 // Date: 9/29/25
 //
-// Description: Simple DAC-based music player with a basic tune for testing
+// Description: Plays WAV drum samples from memory
 
 #include "STM32L432KC_RCC.h"
 #include "STM32L432KC_GPIO.h"
@@ -13,80 +13,15 @@
 #include "STM32L432KC_DAC.h"
 #include "STM32L432KC_TIMER.h"  // For ms_delay
 
-// Twinkle Twinkle Little Star - Original frequencies in C major
-// Format: {frequency in Hz, duration in ms}
-// Standard musical note frequencies (A4 = 440 Hz)
-const int simple_tune[][2] = {
-    // Twinkle, twinkle, little star
-    {262, 300},  // C4 (Middle C)
-    {262, 300},  // C4
-    {392, 300},  // G4
-    {392, 300},  // G4
-    {440, 300},  // A4
-    {440, 300},  // A4
-    {392, 600},  // G4 (held)
-    {0, 50},     // Rest
-    
-    // How I wonder what you are
-    {349, 300},  // F4
-    {349, 300},  // F4
-    {330, 300},  // E4
-    {330, 300},  // E4
-    {294, 300},  // D4
-    {294, 300},  // D4
-    {262, 600},  // C4 (held)
-    {0, 50},     // Rest
-    
-    // Up above the world so high
-    {392, 300},  // G4
-    {392, 300},  // G4
-    {349, 300},  // F4
-    {349, 300},  // F4
-    {330, 300},  // E4
-    {330, 300},  // E4
-    {294, 600},  // D4 (held)
-    {0, 50},     // Rest
-    
-    // Like a diamond in the sky
-    {392, 300},  // G4
-    {392, 300},  // G4
-    {349, 300},  // F4
-    {349, 300},  // F4
-    {330, 300},  // E4
-    {330, 300},  // E4
-    {294, 600},  // D4 (held)
-    {0, 50},     // Rest
-    
-    // Twinkle, twinkle, little star
-    {262, 300},  // C4
-    {262, 300},  // C4
-    {392, 300},  // G4
-    {392, 300},  // G4
-    {440, 300},  // A4
-    {440, 300},  // A4
-    {392, 600},  // G4 (held)
-    {0, 50},     // Rest
-    
-    // How I wonder what you are
-    {349, 300},  // F4
-    {349, 300},  // F4
-    {330, 300},  // E4
-    {330, 300},  // E4
-    {294, 300},  // D4
-    {294, 300},  // D4
-    {262, 800},  // C4 (held longer - end of song)
-    {0, 200},    // Rest before repeat
-    {0, 0}       // End marker
-};
+// Include drum sample arrays header (the .c files are compiled separately)
+#include "wav_arrays/drum_samples.h"
 
-// Sample rate for audio generation (Hz)
-#define SAMPLE_RATE 48000  // 48 kHz - even higher sample rate for maximum resolution
+// Drum sample rate (all samples converted to 22.05 kHz)
+#define DRUM_SAMPLE_RATE 22050
 
-// Function to play a note using DAC
-void play_note(int frequency, int duration_ms) {
-    // Use DAC to play sine wave (envelope is handled inside)
-    DAC_PlaySineWave((float)frequency, duration_ms, SAMPLE_RATE);
-    // No extra delay needed - envelope handles smooth transitions
+// Function to play a drum sample
+void play_drum_sample(const int16_t* data, uint32_t length, uint32_t sample_rate) {
+    DAC_PlayWAV(data, length, sample_rate);
 }
 
 // Main function
@@ -122,22 +57,40 @@ int main(void) {
     DAC->DHR12R1 = 4095;
     ms_delay(2000);  // Hold for 2 seconds
     
-    // If you're still seeing 0.2V for all values, the DAC is not working
-    // Possible causes:
-    // 1. VDDA is not 3.3V (measure VDDA pin)
-    // 2. VREF+ is not actually connected (double-check your bridge)
-    // 3. DAC hardware is damaged
-    // 4. PA4 is shorted or has a load pulling it down
-    
-    // Play the simple tune in a loop
+    // Play drum samples in sequence for testing
+    // This plays all 8 drum sounds in order
     while(1) {
-        int i = 0;
-        while (simple_tune[i][1] != 0) {
-            play_note(simple_tune[i][0], simple_tune[i][1]);
-            i++;
-        }
-        // Short pause between repetitions
+        // Kick
+        play_drum_sample(kick_sample_data, kick_sample_length, kick_sample_sample_rate);
         ms_delay(200);
+        
+        // Snare
+        play_drum_sample(snare_sample_data, snare_sample_length, snare_sample_sample_rate);
+        ms_delay(200);
+        
+        // Hi-Hat Closed
+        play_drum_sample(hihat_closed_sample_data, hihat_closed_sample_length, hihat_closed_sample_sample_rate);
+        ms_delay(200);
+        
+        // Hi-Hat Open
+        play_drum_sample(hihat_open_sample_data, hihat_open_sample_length, hihat_open_sample_sample_rate);
+        ms_delay(200);
+        
+        // Crash
+        play_drum_sample(crash_sample_data, crash_sample_length, crash_sample_sample_rate);
+        ms_delay(200);
+        
+        // Ride
+        play_drum_sample(ride_sample_data, ride_sample_length, ride_sample_sample_rate);
+        ms_delay(200);
+        
+        // Tom High
+        play_drum_sample(tom_high_sample_data, tom_high_sample_length, tom_high_sample_sample_rate);
+        ms_delay(200);
+        
+        // Tom Low
+        play_drum_sample(tom_low_sample_data, tom_low_sample_length, tom_low_sample_sample_rate);
+        ms_delay(500);  // Longer pause before repeating
     }
     
     return 0;
