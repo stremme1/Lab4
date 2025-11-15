@@ -70,20 +70,20 @@ void ms_delay(int ms) {
    }
 }
 
-// Enable GPIOA clock for TIM2_CH1 (PA0)
+// Enable GPIOA clock for TIM2_CH1 (PA5)
 void TIM2_EnableGPIOClock(void) {
     RCC->AHB2ENR |= (1 << 0);  // Enable GPIOA clock
 }
 
-// Configure PA0 as alternate function for TIM2_CH1
-void TIM2_ConfigurePA0(void) {
-    // Set PA0 to alternate function mode
-    GPIOA->MODER &= ~(0b11 << 0);  // Clear bits 0-1 (PA0)
-    GPIOA->MODER |= (0b10 << 0);   // Set bits 0-1 to 10 (alternate function)
+// Configure PA5 as alternate function for TIM2_CH1
+void TIM2_ConfigurePA5(void) {
+    // Set PA5 to alternate function mode
+    GPIOA->MODER &= ~(0b11 << 10);  // Clear bits 11:10 (PA5)
+    GPIOA->MODER |= (0b10 << 10);   // Set bits 11:10 to 10 (alternate function)
     
     // Set alternate function to AF1 (TIM2_CH1)
-    GPIOA->AFRL &= ~(0b1111 << 0);  // Clear bits 0-3 (PA0)
-    GPIOA->AFRL |= (0b0001 << 0);   // Set bits 0-3 to 0001 (AF1 = TIM2_CH1)
+    GPIOA->AFRL &= ~(0b1111 << 20);  // Clear bits 23:20 (PA5)
+    GPIOA->AFRL |= (0b0001 << 20);   // Set bits 23:20 to 0001 (AF1 = TIM2_CH1)
 }
 
 
@@ -100,8 +100,8 @@ void TIM2_InitAudio(void) {
     // Enable GPIOA clock
     TIM2_EnableGPIOClock();
     
-    // Configure PA0 as alternate function for TIM2_CH1
-    TIM2_ConfigurePA0();
+    // Configure PA5 as alternate function for TIM2_CH1
+    TIM2_ConfigurePA5();
     
     // Initialize TIM2
     TIM2_Init();

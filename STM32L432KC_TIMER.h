@@ -68,7 +68,7 @@ void TIM2_Stop(void);
 void TIM2_SetFrequency(uint32_t frequency);
 void ms_delay(int ms);
 void TIM2_EnableGPIOClock(void);
-void TIM2_ConfigurePA0(void);  // Configure PA0 for TIM2_CH1
+void TIM2_ConfigurePA5(void);  // Configure PA5 for TIM2_CH1
 void TIM2_InitAudio(void);  // Complete audio setup function
 void TIM2_Silence(void);  // Set PWM duty cycle to 0% for silence
 
